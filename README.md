@@ -26,10 +26,12 @@ A communication protocol simulation platform by Golang
 >>>channnel_ID：这个是作为软件内部的一个标识，与规约无关，但是要保证节点内唯一  
 >>>Protoco_ID:填写0就表示是使用mdbusTCPServer规约，这个之后的更新中会加上规约的描述信息然后改为select的形式   
 >>>Listen_Port:这个是规约listen的端口，基于tcp的北向协议基本都要配置这个  
+
 >4.点击rtu配置，点击刷新节点信息，选中刚刚建立的channel，在这个channel中添加rtu，需要注意的几个参数如下：  
 >>Description：描述信息而已，在之后配置中方便区分即可  
 >>Rtu_ID：这个是作为软件内部的一个标识，与规约无关，但是要保证节点内唯一   
 >>Rtu_Addr:就是modbus子节点的地址    
+
 >5.点击点配置，再点击刷新节点信息之后选择上面配置的那些channel和Rtu，选择要浏览和修改的点类型，注意，这里大致了几种点的类型，modbus用到的大概只有模拟量和数字量两种的读和写。需要注意的参数如下  
 >>Description：描述信息而已，在之后配置中方便区分即可  
 >>Base_Value:仿真点的基础值  
@@ -39,5 +41,6 @@ A communication protocol simulation platform by Golang
 >>Upper_LImit：数值变化的上限  
 >>Lower_Limit：数值变化的下限  
 >>Param1：modbus的寄存器或者线圈地址  
->>Param2：读点的功能码，模拟量可以填写3或者4，数字量对应1或2  
+>>Param2：读点的功能码，模拟量可以填写3或者4，数字量对应1或2 
+>> 
 >6.点击运行  
