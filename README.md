@@ -18,7 +18,7 @@ A communication protocol simulation platform by Golang
 大致说一下配置的流程  
 >1.首先修改config.json  
 >2.启动程序  
->3.访问http://ip:port/database/channels,(说来惭愧，web只有简单的表格配置，没有做界面的美化，主页也没来得及做，好在基本功能都已经实现)  
+>3.访问http://ip:port/database/channels (说来惭愧，web只有简单的表格配置，没有做界面的美化，主页也没来得及做，好在基本功能都已经实现)  
 >3.进行通道配置  
 >>1.点击刷新channel信息，刷新出local节点的信息之后，点击添加channel信息  
 >>2.对于mdbusTCPServer规约需要关注几个参数  
