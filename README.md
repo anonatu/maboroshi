@@ -20,7 +20,7 @@ A communication protocol simulation platform by Golang
 >2.启动程序  
 >3.访问http://ip:port/database/channels (说来惭愧，web只有简单的表格配置，没有做界面的美化，主页也没来得及做，好在基本功能都已经实现)  
 >3.进行通道配置  
-> ![image]（maboroshi/png/通道配置.png）   
+> ![image]（https://github.com/anonatu/maboroshi/blob/main/png/%E9%80%9A%E9%81%93%E9%85%8D%E7%BD%AE.png）   
 >>1.点击刷新channel信息，刷新出local节点的信息之后，点击添加channel信息  
 >>2.对于mdbusTCPServer规约需要关注几个参数  
 >>>描述信息：描述信息而已，在之后配置中方便区分即可   
