@@ -1,0 +1,379 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Maboroshi</title>
+    <style type="text/css">
+        #app{
+            margin:auto;
+        }
+        .form{
+            text-align:center;
+            font-size: 25px;
+        }
+        .paraList{
+            background-color: cornflowerblue;
+            text-align:center;
+            font-size: 24px;
+        }
+        .optionList{
+            text-align:center;
+            font-size: 24px;
+        }
+        .parseButton{
+            font-size: 24px;
+            background-color: orange;
+            border-radius:12px;
+
+        }
+        .channelTable{
+            margin:auto;
+            font-size: 25px;
+        }
+        .channelRow{
+            border:1px solid cornflowerblue;
+        }
+
+        table{
+            border:5px solid cornflowerblue;
+        }
+        th{
+            border:5px solid cornflowerblue;
+        }
+        tr{
+            border:1px solid cornflowerblue;
+        }
+        td{
+            border:1px solid cornflowerblue;
+        }
+        input[type="number"] {
+            -moz-appearance: textfield;
+        }
+        .channelTable,table{
+            margin:auto;
+            border-collapse: collapse;
+            text-align:center;
+        }
+        select{
+            border:1px black;
+            width: 200px;
+        }
+        .paraInput{
+            display: table-cell;
+            background-color:transparent;
+            border:0px;
+            font-size:25px;
+            width: 100px;
+            text-align:center
+
+        }
+    </style>
+    <script src="https://cdn.jsdelivr.net/npm/vue"></script>
+</head>
+<body>
+
+
+<div id="app">
+    <div>
+        <form class="form">
+            <input type="button" value="home" class="parseButton" v-on:click="">
+            <input type="button" value="节点信息" class="parseButton" v-on:click="">
+            <input type="button" value="rtu配置" class="parseButton" v-on:click="location.href=('../database/rtus')">
+            <input type="button" value="点配置" class="parseButton" v-on:click="location.href=('../database/points')">
+            节点号:<select name="节点号"
+                        class="paraList"
+                        v-model="currentNode"
+                        v-on:change="getChannelsFromDB()">点号
+                <option class="optionList" v-for="(node,index) in nodeList"  v-bind:value="node">节点{{node.Node_ID}}：{{node.Addr}}</option>
+            </select>
+            <input type="button" value="刷新channel信息" class="parseButton" v-on:click="this.getNodesFromDB">
+            <input type="button" value="添加channel信息" class="parseButton" v-on:click="this.addChannel">
+            <input type="button" value="删除channel信息" class="parseButton" v-on:click="this.deleteChannel">
+            <input type="button" value="运行" class="parseButton" v-on:click="">
+        </form>
+    </div>
+    <div class="channelTable">
+        <table>
+            <tr class="channelField">
+                <th v-on:dblclick="sortBy('Tag_name')">标签</th>
+                <th v-on:dblclick="sortBy('Description')">信息描述</th>
+                <th v-on:dblclick="sortBy('Channel_ID')">通道ID</th>
+                <th v-on:dblclick="sortBy('If_Used')">使能</th>
+                <th v-on:dblclick="sortBy('Conn_Type')">连接种类</th>
+                <th v-on:dblclick="sortBy('Protocol_ID')">规约</th>
+                <th v-on:dblclick="sortBy('Listen_Port')">监听端口</th>
+                <th v-on:dblclick="sortBy('Addr1')">地址1</th>
+                <th v-on:dblclick="sortBy('Addr2')">地址2</th>
+                <th v-on:dblclick="sortBy('Addr3')">地址3</th>
+                <th v-on:dblclick="sortBy('Addr4')">地址4</th>
+                <th v-on:dblclick="sortBy('Baud')">波特率</th>
+                <th v-on:dblclick="sortBy('Parity')">校验位</th>
+                <th v-on:dblclick="sortBy('Databit')">数据位</th>
+                <th v-on:dblclick="sortBy('Stopbit')">停止位</th>
+
+            </tr>
+            <tr
+                v-for="(channel,index) in channelList"
+                v-on:mouseover="changeBackgroundColor($event,channel,'#abb2b9')"
+                v-on:mouseout="changeBackgroundColor($event,channel,'')"
+                v-on:click="select($event,channel)">
+                <td>{{channel.Tag_Name}}</td>
+                <td>
+                    <input type="text" v-bind:value="channel.Description" v-model="channel.Description"
+                           class="paraInput"
+                           v-on:change="editChannel($event,channel)" >
+                </td>
+                <td>{{channel.Channel_ID}}</td>
+                <td>
+                    <input type="number" v-bind:value="channel.If_Used" v-model.number="channel.If_Used"
+                           class="paraInput"
+                           v-on:change="editChannel($event,channel)" >
+                </td>
+                <td>
+                    <input type="number" v-bind:value="channel.Conn_Type" v-model.number="channel.Conn_Type"
+                           class="paraInput"
+                           v-on:change="editChannel($event,channel)" >
+                </td>
+                <td>
+                    <input type="number" v-bind:value="channel.Protocol_ID" v-model.number="channel.Protocol_ID"
+                           class="paraInput"
+                           v-on:change="editChannel($event,channel)" >
+                </td>
+                <td>
+                    <input type="number" v-bind:value="channel.Listen_Port" v-model.number="channel.Listen_Port"
+                           class="paraInput"
+                           v-on:change="editChannel($event,channel)" >
+                </td>
+                <td>
+                    <input type="text" v-bind:value="channel.Addr1" v-model="channel.Addr1"
+                           class="paraInput"
+                           v-on:change="editChannel($event,channel)" >
+                </td>
+                <td>
+                    <input type="text" v-bind:value="channel.Addr2" v-model="channel.Addr2"
+                           class="paraInput"
+                           v-on:change="editChannel($event,channel)" >
+                </td>
+                <td>
+                    <input type="text" v-bind:value="channel.Addr3" v-model="channel.Addr3"
+                           class="paraInput"
+                           v-on:change="editChannel($event,channel)" >
+                </td>
+                <td>
+                    <input type="text" v-bind:value="channel.Addr4" v-model="channel.Addr4"
+                           class="paraInput"
+                           v-on:change="editChannel($event,channel)" >
+                </td>
+                <td>
+                    <input type="number" v-bind:value="channel.Baud" v-model.number="channel.Baud"
+                           class="paraInput"
+                           v-on:change="editChannel($event,channel)" >
+                </td>
+                <td>
+                    <input type="number" v-bind:value="channel.Parity" v-model.number="channel.Parity"
+                           class="paraInput"
+                           v-on:change="editChannel($event,channel)" >
+                </td>
+                <td>
+                    <input type="number" v-bind:value="channel.Databit" v-model.number="channel.Databit"
+                           class="paraInput"
+                           v-on:change="editChannel($event,channel)" >
+                </td>
+                <td>
+                    <input type="number" v-bind:value="channel.Stopbit" v-model.number="channel.Stopbit"
+                           class="paraInput"
+                           v-on:change="editChannel($event,channel)" >
+                </td>
+
+            </tr>
+        </table>
+    </div>
+</div>
+<script>
+
+
+
+    var table=new Vue({
+        el:'#app',
+        data:{
+            // test:[],
+            currentNode:{},
+            currentChannel:{},
+            nodeList: [],
+            channelList: [],
+            addChannelList:[],
+            selectedChannelList:{},
+            tableBGC:"#000000",
+            tmpFocusin:"",
+
+
+            ws:null
+
+
+        },
+        mounted:function(){
+            this.initWebsocket()
+            // this.getNodesFromDB()
+        },
+
+        methods:{
+            initWebsocket:function (){
+                this.ws=new WebSocket("ws://localhost:80/websocket")
+                this.ws.onclose=(e)=>{
+                    alert("websocket已断开连接！请检查maboroshi的运行状态")
+                }
+                this.ws.onmessage=(e)=>{
+                    messageJson=JSON.parse(e.data)
+                    // alert(messageJson.command)
+                    switch (messageJson.command) {
+                        case "getNodesFromDB":
+                            this.currentNode={}
+                            this.nodeList=[]
+                            this.fillArray(this.nodeList,messageJson.data)
+                            this.changeCurrentArray(this.currentNode,this.nodeList)
+                            this.getChannelsFromDB(this.currentNode.Node_ID)
+                            break
+                        case "getChannelsFromDB":
+                            this.currentChannel={}
+                            this.channelList=[]
+                            this.fillArray(this.channelList,messageJson.data)
+                            this.changeCurrentArray(this.currentChannel,messageJson.data)
+                            break
+                        case "setChannelToDB":
+                            if(messageJson.flag>=128){
+                                alert("修改失败")
+                            }else{
+                                this.getChannelsFromDB()
+                            }
+                            break
+                        case "deleteChannelToDB":
+                            if(messageJson.flag===128){
+                                alert("修改失败")
+                            }else{
+                                this.getChannelsFromDB()
+                            }
+                            break
+                        default:
+                            break
+                    }
+                }
+
+
+            },
+
+            getNodesFromDB:function () {
+                var requestMessage={
+                    command:"getNodesFromDB",
+                    para:{datatype:"json"},
+                    data:" ",
+                }
+                this.ws.send(JSON.stringify(requestMessage))
+            },
+            getChannelsFromDB:function () {
+                var nodeID=this.currentNode.Node_ID
+                if (nodeID.length===0){
+                    alert("请先查询节点信息")
+                }
+
+                // alert(JSON.stringify(this.currentNode))
+                let requestMessage={
+                    command:"getChannelsFromDB",
+                    para:{datatype:"json",Node_ID:nodeID},
+                    data:" ",
+                }
+                this.ws.send(JSON.stringify(requestMessage))
+            },
+
+            fillArray:function(array1,array2){
+
+                array2.forEach((item)=>{
+                    array1.push(item)
+                })
+
+            },
+            changeCurrentArray:function (currentObj,array){
+                for(let key in array[0]){
+                    this.$set(currentObj,key,array[0][key])
+                }
+            },
+            changeBackgroundColor:function(event,channel,bgc){
+                if (this.selectedChannelList[channel.Tag_Name]){
+
+                }else {
+                    event.currentTarget.style.backgroundColor = bgc
+                }
+            },
+            addChannel:function () {
+                var newChannel ={}
+                newChannel.Tag_Name=(this.getMaxChannelID()+1).toString()
+                newChannel.Description=""
+                newChannel.Channel_ID=this.getMaxChannelID()+1
+                newChannel.If_Used=1
+                newChannel.Conn_Type=1
+                newChannel.Protocol_ID=0
+                newChannel.Listen_Port=0
+                newChannel.Addr1=""
+                newChannel.Addr2=""
+                newChannel.Addr3=""
+                newChannel.Addr4=""
+                newChannel.Baud=0
+                newChannel.Parity=0
+                newChannel.Databit=0
+                newChannel.Stopbit=0
+                this.setChannel(newChannel,1)
+            },
+            deleteChannel:function () {
+                alert(JSON.stringify(this.selectedChannelList))
+                var deleteList=[]
+                for(let tagName in this.selectedChannelList){
+                    deleteList.push({"Tag_Name":tagName})
+                }
+                let requestMessage={
+                    command:"deleteChannelToDB",
+                    para:{datatype:"json",Flag:0,Node_ID:this.currentNode.Node_ID},
+                    data:deleteList
+                }
+                alert(JSON.stringify(this.selectedChannelList))
+                this.ws.send(JSON.stringify(requestMessage))
+            },
+            editChannel:function(event, channel){
+                this.setChannel(channel,5)
+            },
+            select:function(event,channel){
+                if (this.selectedChannelList[channel.Tag_Name]){
+                    delete(this.selectedChannelList[channel.Tag_Name])
+                    event.currentTarget.style.backgroundColor = ""
+                }else{
+                    this.selectedChannelList[channel.Tag_Name]=true
+                    event.currentTarget.style.backgroundColor = "#ff8000"
+                }
+            },
+            modifyChannel:function(event,channel){
+                this.setChannel(channel,5)
+            },
+            //修改点配置newOrSet=1为新增点，newOrSet=5为修改点
+            setChannel:function (channel,flag) {
+                // alert("change")
+                let requestMessage={
+                    command:"setChannelToDB",
+                    para:{datatype:"json",Flag:flag,Node_ID:this.currentNode.Node_ID},
+                    data:channel,
+                }
+                this.ws.send(JSON.stringify(requestMessage))
+            },
+            getMaxChannelID:function () {
+                var max=0
+                this.channelList.forEach((channel)=>{
+                    if (channel.Channel_ID>max){
+                        max=channel.Channel_ID
+                    }
+                })
+                return max
+            },
+        }
+    })
+
+</script>
+
+</body>
+</html>

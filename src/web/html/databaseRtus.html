@@ -1,0 +1,372 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Maboroshi</title>
+    <style type="text/css">
+        #app{
+            margin:auto;
+        }
+        .form{
+            text-align:center;
+            font-size: 25px;
+        }
+        .paraList{
+            background-color: cornflowerblue;
+            text-align:center;
+            font-size: 24px;
+        }
+        .optionList{
+            text-align:center;
+            font-size: 24px;
+        }
+        .parseButton{
+            font-size: 24px;
+            background-color: orange;
+            border-radius:12px;
+
+        }
+        .rtusTable{
+            margin:auto;
+            font-size: 25px;
+        }
+        .rtuRow{
+            border:1px solid cornflowerblue;
+        }
+
+        table{
+            border:5px solid cornflowerblue;
+        }
+        th{
+            border:5px solid cornflowerblue;
+        }
+        tr{
+            border:1px solid cornflowerblue;
+        }
+        td{
+            border:1px solid cornflowerblue;
+        }
+        input[type="number"] {
+            -moz-appearance: textfield;
+        }
+        .rtusTable,table{
+            margin:auto;
+            border-collapse: collapse;
+            text-align:center;
+        }
+        select{
+            border:1px black;
+            width: 200px;
+        }
+        .paraInput{
+            display: table-cell;
+            background-color:transparent;
+            border:0px;
+            font-size:25px;
+            width: 100px;
+            text-align:center
+
+        }
+    </style>
+    <script src="https://cdn.jsdelivr.net/npm/vue"></script>
+</head>
+<body>
+
+
+<div id="app">
+    <div>
+        <form class="form">
+            <input type="button" value="home" class="parseButton" v-on:click="">
+            <input type="button" value="节点信息" class="parseButton" v-on:click="">
+            <input type="button" value="channel配置" class="parseButton" v-on:click="location.href=('../database/channels')">
+            <input type="button" value="点配置" class="parseButton" v-on:click="location.href=('../database/points')">
+            节点号:<select name="节点号"
+                        class="paraList"
+                        v-model="currentNode"
+                        v-on:change="getChannelsFromDB()">点号
+                <option class="optionList" v-for="(node,index) in nodeList"  v-bind:value="node">节点{{node.Node_ID}}：{{node.Addr}}</option>
+            </select>
+            通道号：<select name="通道号" class="paraList"
+                        v-model="currentChannel"
+                        v-on:change="getRtusFromDB()">点号
+                <option class="optionList"
+                        v-for="(channel,index) in channelList"
+                        v-bind:value="channel">通道ID：{{channel.Channel_ID}}-{{channel.Description}}</option>
+            </select>
+            <input type="button" value="查询点信息" class="parseButton" v-on:click="this.getRtusFromDB">
+            <input type="button" value="刷新节点信息" class="parseButton" v-on:click="this.getNodesFromDB">
+            <input type="button" value="添加点信息" class="parseButton" v-on:click="this.addRtu">
+            <input type="button" value="删除点信息" class="parseButton" v-on:click="this.deleteRtu">
+            <input type="button" value="运行" class="parseButton" v-on:click="">
+        </form>
+    </div>
+    <div class="rtusTable">
+        <table>
+            <tr class="rtuField">
+                <th v-on:dblclick="sortBy('Tag_name')">标签</th>
+                <th v-on:dblclick="sortBy('Description')">描述信息</th>
+                <th v-on:dblclick="sortBy('Rtu_ID')">RtuID</th>
+                <th v-on:dblclick="sortBy('Channel_ID')">通道ID</th>
+                <th v-on:dblclick="sortBy('If_Used')">使能</th>
+                <th v-on:dblclick="sortBy('Rtu_Addr')">Rtu地址</th>
+                <th v-on:dblclick="sortBy('Para1')">参数1</th>
+                <th v-on:dblclick="sortBy('Para2')">参数2</th>
+                <th v-on:dblclick="sortBy('Para3')">参数3</th>
+                <th v-on:dblclick="sortBy('Para4')">参数4</th>
+            </tr>
+            <tr
+                v-for="(rtu,index) in rtuList"
+                v-on:mouseover="changeBackgroundColor($event,rtu,'#abb2b9')"
+                v-on:mouseout="changeBackgroundColor($event,rtu,'')"
+                v-on:click="select($event,rtu)">
+                <td>{{rtu.Tag_Name}}</td>
+                <td>
+                    <input type="text" v-bind:value="rtu.Description" v-model="rtu.Description"
+                           class="paraInput"
+                           v-on:change="editRtu($event,rtu)" >
+                </td>
+                <td>{{rtu.Rtu_ID}}</td>
+                <td>{{rtu.Channel_ID}}</td>
+                <td>
+                    <input type="number" v-bind:value="rtu.If_Used" v-model.number="rtu.If_Used"
+                           class="paraInput"
+                           v-on:change="editRtu($event,rtu)" >
+                </td>
+                <td>
+                    <input type="number" v-bind:value="rtu.Rtu_Addr" v-model.number="rtu.Rtu_Addr"
+                           class="paraInput"
+                           v-on:change="editRtu($event,rtu)" >
+                </td>
+                <td>
+                    <input type="number" v-bind:value="rtu.Para1" v-model.number="rtu.Para1"
+                           class="paraInput"
+                           v-on:change="editRtu($event,rtu)" >
+                </td>
+                <td>
+                    <input type="number" v-bind:value="rtu.Para2" v-model.number="rtu.Para2"
+                           class="paraInput"
+                           v-on:change="editRtu($event,rtu)" >
+                </td>
+                <td>
+                    <input type="number" v-bind:value="rtu.Para3" v-model.number="rtu.Para3"
+                           class="paraInput"
+                           v-on:change="editRtu($event,rtu)" >
+                </td>
+                <td>
+                    <input type="number" v-bind:value="rtu.Para4" v-model.number="rtu.Para4"
+                           class="paraInput"
+                           v-on:change="editRtu($event,rtu)" >
+                </td>
+            </tr>
+        </table>
+    </div>
+</div>
+<script>
+
+
+
+    var table=new Vue({
+        el:'#app',
+        data:{
+            // test:[],
+            currentNode:{},
+            currentChannel:{},
+            currentRtu:{},
+            nodeList: [],
+            channelList: [],
+            rtuList:[],
+            addRtuList:[],
+            selectedRtuList:{},
+            tableBGC:"#000000",
+            tmpFocusin:"",
+
+
+            ws:null
+
+
+        },
+        mounted:function(){
+            this.initWebsocket()
+            // this.getNodesFromDB()
+        },
+
+        methods:{
+            initWebsocket:function (){
+                this.ws=new WebSocket("ws://localhost:80/websocket")
+                this.ws.onclose=(e)=>{
+                    alert("websocket已断开连接！请检查maboroshi的运行状态")
+                }
+                this.ws.onmessage=(e)=>{
+                    messageJson=JSON.parse(e.data)
+                    // alert(messageJson.command)
+                    switch (messageJson.command) {
+                        case "getNodesFromDB":
+                            this.currentNode={}
+                            this.nodeList=[]
+                            this.fillArray(this.nodeList,messageJson.data)
+                            this.changeCurrentArray(this.currentNode,this.nodeList)
+                            this.getChannelsFromDB(this.currentNode.Node_ID)
+                            break
+                        case "getChannelsFromDB":
+                            this.currentChannel={}
+                            this.channelList=[]
+                            this.fillArray(this.channelList,messageJson.data)
+                            this.changeCurrentArray(this.currentChannel,messageJson.data)
+                            this.getRtusFromDB(this.currentNode.Node_ID,this.currentChannel.Channel_ID)
+                            break
+                        case "getRtusFromDB":
+                            this.currentRtu={}
+                            this.rtuList=[]
+                            this.fillArray(this.rtuList,messageJson.data)
+                            this.changeCurrentArray(this.currentRtu,messageJson.data)
+                            break
+                        case "setRtuToDB":
+                            if(messageJson.flag>=128){
+                                alert("修改失败")
+                            }else{
+                                this.getRtusFromDB()
+                            }
+                            break
+                        case "deleteRtuToDB":
+                            if(messageJson.flag===128){
+                                alert("修改失败")
+                            }else{
+                                this.getRtusFromDB()
+                            }
+                            break
+                        default:
+                            break
+                    }
+                }
+
+
+            },
+
+            getNodesFromDB:function () {
+                var requestMessage={
+                    command:"getNodesFromDB",
+                    para:{datatype:"json"},
+                    data:" ",
+                }
+                this.ws.send(JSON.stringify(requestMessage))
+            },
+            getChannelsFromDB:function () {
+                var nodeID=this.currentNode.Node_ID
+                if (nodeID.length===0){
+                    alert("请先查询节点信息")
+                }
+
+                // alert(JSON.stringify(this.currentNode))
+                let requestMessage={
+                    command:"getChannelsFromDB",
+                    para:{datatype:"json",Node_ID:nodeID},
+                    data:" ",
+                }
+                this.ws.send(JSON.stringify(requestMessage))
+            },
+            getRtusFromDB:function () {
+                var requestMessage={
+                    command:"getRtusFromDB",
+                    para:{datatype:"json",Node_ID:this.currentNode.Node_ID,Channel_ID:this.currentChannel.Channel_ID},
+                    data:" ",
+                }
+                this.ws.send(JSON.stringify(requestMessage))
+            },
+            updateOption:function () {
+                this.getNodesFromDB()
+            },
+            fillArray:function(array1,array2){
+
+                array2.forEach((item)=>{
+                    array1.push(item)
+                })
+
+            },
+            changeCurrentArray:function (currentObj,array){
+                for(let key in array[0]){
+                    this.$set(currentObj,key,array[0][key])
+                }
+            },
+            changeBackgroundColor:function(event,rtu,bgc){
+                if (this.selectedRtuList[rtu.Tag_Name]){
+
+                }else {
+                    event.currentTarget.style.backgroundColor = bgc
+                }
+            },
+            addRtu:function () {
+                var newRtu ={}
+                newRtu.Tag_Name=this.currentChannel.Channel_ID+"."+(this.getMaxRtuID()+1)
+                newRtu.Description=""
+                newRtu.Rtu_ID=(this.getMaxRtuID()+1)
+                newRtu.Channel_ID=this.currentChannel.Channel_ID
+                newRtu.If_Used=1
+                newRtu.Rtu_Addr=1
+                newRtu.Para1=0
+                newRtu.Para2=0
+                newRtu.Para3=0
+                newRtu.Para4=0
+                this.setRtu(newRtu,1)
+            },
+            deleteRtu:function () {
+                alert(JSON.stringify(this.selectedRtuList))
+                var deleteList=[]
+                for(let tagName in this.selectedRtuList){
+                    deleteList.push({"Tag_Name":tagName})
+                }
+                let requestMessage={
+                    command:"deleteRtuToDB",
+                    para:{datatype:"json",Flag:0,Node_ID:this.currentNode.Node_ID},
+                    data:deleteList
+                }
+                alert(JSON.stringify(this.selectedRtuList))
+                this.ws.send(JSON.stringify(requestMessage))
+            },
+            editRtu:function(event, rtu){
+                this.setRtu(rtu,5)
+            },
+            select:function(event,rtu){
+                if (this.selectedRtuList[rtu.Tag_Name]){
+                    delete(this.selectedRtuList[rtu.Tag_Name])
+                    event.currentTarget.style.backgroundColor = ""
+                }else{
+                    this.selectedRtuList[rtu.Tag_Name]=true
+                    event.currentTarget.style.backgroundColor = "#ff8000"
+                }
+            },
+            modifyRtu:function(event, rtu){
+
+                alert("modify")
+                this.setRtu(rtu,5)
+            },
+            //修改点配置newOrSet=1为新增点，newOrSet=5为修改点
+            setRtu:function (rtu, flag) {
+                // alert("change")
+                let requestMessage={
+                    command:"setRtuToDB",
+                    para:{datatype:"json",Flag:flag,Node_ID:this.currentNode.Node_ID},
+                    data:rtu,
+                }
+                this.ws.send(JSON.stringify(requestMessage))
+            },
+            getMaxRtuID:function () {
+                var max=0
+                this.rtuList.forEach((rtu)=>{
+                    if (rtu.Rtu_ID>max){
+                        max=rtu.Rtu_ID
+                    }
+                })
+                return max
+            },
+            getIDsFromRtuTag:function (tagName) {
+                var list=tagName.splice(".")
+                return [parseInt(list[0]),parseInt(list[1])]
+
+            }
+        }
+    })
+
+</script>
+
+</body>
+</html>

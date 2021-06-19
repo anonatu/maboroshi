@@ -1,0 +1,485 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Maboroshi</title>
+    <style type="text/css">
+        #app{
+            margin:auto;
+        }
+        .form{
+            text-align:center;
+            font-size: 25px;
+        }
+        .paraList{
+            background-color: cornflowerblue;
+            text-align:center;
+            font-size: 24px;
+        }
+        .optionList{
+            text-align:center;
+            font-size: 24px;
+        }
+        .parseButton{
+            font-size: 24px;
+            background-color: orange;
+            border-radius:12px;
+
+        }
+        .rtusTable{
+            margin:auto;
+            font-size: 25px;
+        }
+        .pointRow{
+            border:1px solid cornflowerblue;
+            font-size:25px;
+        }
+
+        table{
+            border:5px solid cornflowerblue;
+        }
+        th{
+            border:5px solid cornflowerblue;
+        }
+        tr{
+            border:1px solid cornflowerblue;
+        }
+        td{
+            border:1px solid cornflowerblue;
+        }
+        input[type="number"] {
+            -moz-appearance: textfield;
+        }
+        .rtusTable,table{
+            margin:auto;
+            border-collapse: collapse;
+            text-align:center;
+        }
+        select{
+            border:1px black;
+            width: 200px;
+        }
+        .paraInput{
+            display: table-cell;
+            background-color:transparent;
+            border:0px;
+            font-size:25px;
+            width: 100px;
+            text-align:center
+
+        }
+    </style>
+    <script src="https://cdn.jsdelivr.net/npm/vue"></script>
+</head>
+<body>
+
+
+<div id="app">
+    <div>
+        <form class="form">
+            <input type="button" value="home" class="parseButton" v-on:click="">
+            <input type="button" value="节点信息" class="parseButton" v-on:click="">
+            <input type="button" value="channel配置" class="parseButton" v-on:click="location.href=('../database/channels')">
+            <input type="button" value="rtu配置" class="parseButton" v-on:click="location.href=('../database/rtus')">
+            <input type="button" value="点配置" class="parseButton" v-on:click="location.href=('../database/points')">
+            节点号:<select name="节点号"
+                        class="paraList"
+                        v-model="currentNode"
+                        v-on:change="getChannelsFromDB()">点号
+                <option class="optionList" v-for="(node,index) in nodeList"  v-bind:value="node">节点{{node.Node_ID}}：{{node.Addr}}</option>
+            </select>
+            通道号：<select name="通道号" class="paraList"
+                        v-model="currentChannel"
+                        v-on:change="getRtusFromDB()">点号
+                <option class="optionList"
+                        v-for="(channel,index) in channelList"
+                        v-bind:value="channel">通道ID：{{channel.Channel_ID}}-{{channel.Description}}</option>
+            </select>
+            RTU号：<select name="节点号" class="paraList" v-model="currentRtu" v-on:change="getPointType">点号>点号
+                <option class="optionList" v-for="(rtu,index) in rtuList" v-bind:value="rtu">rtuID:{{rtu.Rtu_ID}}-{{rtu.Description}}</option>
+            </select>
+            点类型：<select name="点类型" class="paraList" v-model="currentPointType" v-on:change="getPointsFromRTD">点号>点号
+            <option class="optionList" v-for="(pointType,index) in pointTypeList"
+                    v-bind:value="pointType">PointType：{{pointType.PointType_ID}}-{{pointType.Description}}</option>
+        </select>
+            <input type="button" value="查询点信息" class="parseButton" v-on:click="this.getPointsFromRTD">
+            <input type="button" value="刷新节点信息" class="parseButton" v-on:click="this.getNodesFromDB">
+
+            <input type="button" value="开始" class="parseButton" v-on:click="this.runRTD">
+            <input type="button" value="停止" class="parseButton" v-on:click="this.stopRTD">
+        </form>
+    </div>
+    <div class="pointsTable">
+        <table>
+            <tr class="pointField">
+                <th v-on:dblclick="sortBy('Tag_name')">标签</th>
+                <th v-on:dblclick="sortBy('Description')">信息描述</th>
+                <th v-on:dblclick="sortBy('Device_ID')">设备ID</th>
+                <th v-on:dblclick="sortBy('Rtu_ID')">RtuID</th>
+                <th v-on:dblclick="sortBy('Channel_ID')">通道ID</th>
+                <th v-on:dblclick="sortBy('Point_Type')">点类型</th>
+                <th v-on:dblclick="sortBy('Value')">实时值</th>
+                <th v-on:dblclick="sortBy('Quality')">品质信息</th>
+                <th v-on:dblclick="sortBy('Script')">脚本</th>
+                <th v-on:dblclick="sortBy('Strategy')">变化策略</th>
+                <th v-on:dblclick="sortBy('Base_Value')">基值</th>
+                <th v-on:dblclick="sortBy('Upper_LImit')">上限值</th>
+                <th v-on:dblclick="sortBy('Lower_Limit')">下限值</th>
+                <th v-on:dblclick="sortBy('Period')">周期</th>
+                <th v-on:dblclick="sortBy('Step_Size')">步长</th>
+                <th v-on:dblclick="sortBy('Use_Soe')">soe使能</th>
+                <th v-on:dblclick="sortBy('Param1')">参数1</th>
+                <th v-on:dblclick="sortBy('Param2')">参数2</th>
+                <th v-on:dblclick="sortBy('Param3')">参数3</th>
+                <th v-on:dblclick="sortBy('Param4')">参数4</th>
+                <th v-on:dblclick="sortBy('Param5')">参数5</th>
+                <th v-on:dblclick="sortBy('Param6')">参数6</th>
+                <th v-on:dblclick="sortBy('Param7')">参数7</th>
+                <th v-on:dblclick="sortBy('Param8')">参数8</th>
+                <th v-on:dblclick="sortBy('Point_ID')">点ID</th>
+                <th v-on:dblclick="sortBy('If_Use_Script')">脚本使能</th>
+
+            </tr>
+            <tr class="pointRow"
+                v-for="(point,index) in pointList"
+                v-on:mouseover="changeBackgroundColor($event,point,'#abb2b9')"
+                v-on:mouseout="changeBackgroundColor($event,point,'')"
+                v-on:click="select($event,point)">
+                <td>{{point.Tag_Name}}</td>
+                <td>{{point.Description}}</td>
+                <td>{{point.Device_ID}}</td>
+                <td>{{point.Rtu_ID}}</td>
+                <td>{{point.Channel_ID}}</td>
+                <td>{{point.Point_Type}}</td>
+                <td>
+                    <input type="number" v-bind:value="point.Value" v-model.number="point.Value"
+                           class="paraInput"
+                           v-on:change="editRtu($event,point)" >
+                </td>
+                <td>
+                    <input type="number" v-bind:value="point.Quality" v-model.number="point.Quality"
+                           class="paraInput"
+                           v-on:change="editRtu($event,point)" >
+                </td>
+                <td>{{point.Script}}</td>
+                <td>{{point.Strategy}}</td>
+                <td>{{point.Base_Value}}</td>
+                <td>{{point.Upper_Limit}}</td>
+                <td>{{point.Lower_Limit}}</td>
+                <td>{{point.Period}}</td>
+                <td>{{point.Step_Size}}</td>
+                <td>{{point.Use_Soe}}</td>
+                <td>{{point.Param1}}</td>
+                <td>{{point.Param2}}</td>
+                <td>{{point.Param3}}</td>
+                <td>{{point.Param4}}</td>
+                <td>{{point.Param5}}</td>
+                <td>{{point.Param6}}</td>
+                <td>{{point.Param7}}</td>
+                <td>{{point.Param8}}</td>
+                <td>{{point.Point_ID}}</td>
+                <td>{{point.If_Use_Script}}</td>
+            </tr>
+        </table>
+    </div>
+</div>
+<script>
+
+
+
+    var table=new Vue({
+        el:'#app',
+        data:{
+            isRunning:0,
+            currentNode:{},
+            currentChannel:{},
+            currentRtu:{},
+            currentPointType:{},
+            nodeList: [],
+            channelList: [],
+            rtuList:[],
+            pointTypeList:[],
+            pointList:[],
+            addPointList:[],
+            //selectedPointList{"1.1.12":{isSelected:true}}
+            selectedPointList:{},
+            tableBGC:"#000000",
+            tmpFocusin:"",
+
+
+            ws:null
+
+
+        },
+        created(){
+            window.setInterval(()=>{
+                setTimeout(this.updatePointsFromRTD(),0);
+
+            },1000)
+        },
+        mounted:function(){
+            this.initWebsocket()
+            // this.getNodesFromDB()
+        },
+
+        methods:{
+            initWebsocket:function (){
+                this.ws=new WebSocket("ws://localhost:80/websocket")
+                this.ws.onopen=(e)=>{
+                   this.runRTD()
+
+                }
+                this.ws.onclose=(e)=>{
+                    alert("websocket已断开连接！请检查maboroshi的运行状态")
+                }
+                this.ws.onmessage=(e)=>{
+                    messageJson=JSON.parse(e.data)
+                    // alert(messageJson.command)
+                    switch (messageJson.command) {
+                        case "getNodesFromDB":
+                            this.currentNode={}
+                            this.nodeList=[]
+                            this.fillArray(this.nodeList,messageJson.data)
+                            this.changeCurrentArray(this.currentNode,this.nodeList)
+                            this.getChannelsFromDB(this.currentNode.Node_ID)
+                            break
+                        case "getChannelsFromDB":
+                            this.currentChannel={}
+                            this.channelList=[]
+                            this.fillArray(this.channelList,messageJson.data)
+                            this.changeCurrentArray(this.currentChannel,messageJson.data)
+                            this.getRtusFromDB(this.currentNode.Node_ID,this.currentChannel.Channel_ID)
+                            break
+                        case "getRtusFromDB":
+                            this.currentRtu={}
+                            this.rtuList=[]
+                            this.fillArray(this.rtuList,messageJson.data)
+                            this.changeCurrentArray(this.currentRtu,messageJson.data)
+                            this.getPointType()
+                            break
+                        case "getPointType":
+                            this.currentPointType={}
+                            this.pointTypeList=[]
+                            this.fillArray(this.pointTypeList,messageJson.data)
+                            this.changeCurrentArray(this.currentPointType,this.pointTypeList)
+                            break
+                        case "getPointsFromRTD":
+
+                            this.pointList=[]
+                            this.fillArray(this.pointList,messageJson.data)
+                            this.pointList.sort(this.sortByKey("Point_ID"))
+                            break
+                        case "setPointToRTD":
+                            if(messageJson.flag>=128){
+                                alert("修改失败")
+                            }else{
+                                this.getPointsFromRTD()
+                            }
+                            break
+                        case "runRTD":
+                            this.getRunningFlag()
+                            break
+                        case "stopRTD":
+                            this.getRunningFlag()
+                            break
+                        case "getRunningFlag":
+                            this.isRunning=messageJson.data.RunningFlag
+                            break
+                        case "updatePointsFromRTD":
+                            messageJson.data.forEach((item)=>{
+                                this.pointList.forEach((point)=>{
+                                    if(item.Tag_Name===point.Tag_Name){
+                                        point.Value=item.Value
+                                    }
+                                })
+
+                            })
+                            break
+
+                        default:
+                            break
+                    }
+                }
+
+
+            },
+
+            getNodesFromDB:function () {
+                var requestMessage={
+                    command:"getNodesFromDB",
+                    para:{datatype:"json"},
+                    data:" ",
+                }
+                this.ws.send(JSON.stringify(requestMessage))
+            },
+            getChannelsFromDB:function () {
+                var nodeID=this.currentNode.Node_ID
+                if (nodeID.length===0){
+                    alert("请先查询节点信息")
+                }
+
+                // alert(JSON.stringify(this.currentNode))
+                let requestMessage={
+                    command:"getChannelsFromDB",
+                    para:{datatype:"json",Node_ID:nodeID},
+                    data:" ",
+                }
+                this.ws.send(JSON.stringify(requestMessage))
+            },
+            getRtusFromDB:function () {
+                var requestMessage={
+                    command:"getRtusFromDB",
+                    para:{datatype:"json",Node_ID:this.currentNode.Node_ID,Channel_ID:this.currentChannel.Channel_ID},
+                    data:" ",
+                }
+                this.ws.send(JSON.stringify(requestMessage))
+            },
+            getPointType:function(){
+                var requestMessage={
+                    command:"getPointType",
+                    para:{datatype:"json"},
+                    data:" ",
+                }
+                this.ws.send(JSON.stringify(requestMessage))
+            },
+            getPointsFromRTD:function () {
+                if (this.isRunning===0){
+                    alert("系统未处于运行模式")
+                    return
+                }
+                var requestMessage={
+                    command:"getPointsFromRTD",
+                    para:{datatype:"json",
+                        Node_ID:this.currentNode.Node_ID,
+                        Channel_ID:this.currentChannel.Channel_ID,
+                        Rtu_ID:this.currentRtu.Rtu_ID,
+                        Point_Type: this.currentPointType.PointType_ID,
+                    },
+                    data:" ",
+                }
+                this.ws.send(JSON.stringify(requestMessage))
+            },
+            updateOption:function () {
+                this.getNodesFromDB()
+            },
+            fillArray:function(array1,array2){
+
+                array2.forEach((item)=>{
+                    array1.push(item)
+                })
+
+            },
+            changeCurrentArray:function (currentObj,array){
+                for(let key in array[0]){
+                    this.$set(currentObj,key,array[0][key])
+                }
+            },
+            changeBackgroundColor:function(event,point,bgc){
+                if (this.selectedPointList[point.Tag_Name]){
+
+                }else {
+                    event.currentTarget.style.backgroundColor = bgc
+                }
+            },
+            select:function(event,point){
+                if (this.selectedPointList[point.Tag_Name]){
+                    delete(this.selectedPointList[point.Tag_Name])
+                    event.currentTarget.style.backgroundColor = ""
+                }else{
+                    this.selectedPointList[point.Tag_Name]=true
+                    event.currentTarget.style.backgroundColor = "#ff8000"
+                }
+            },
+            modifyPoint:function(event,point){
+
+                this.setPoint(point,5)
+            },
+            //修改点配置newOrSet=1为新增点，newOrSet=5为修改点
+            setPoint:function (point,flag) {
+                // alert("change")
+                let requestMessage={
+                    command:"setPointToDB",
+                    para:{datatype:"json",Flag:flag,Node_ID:this.currentNode.Node_ID,PointType_ID:this.currentPointType.PointType_ID},
+                    data:point,
+                }
+                this.ws.send(JSON.stringify(requestMessage))
+            },
+            getMaxPointID:function () {
+                var max=0
+                this.pointList.forEach((point)=>{
+                    if (point.Point_ID>max){
+                        max=point.Point_ID
+                    }
+                })
+                return max
+            },
+            getIDsFromPointTag:function (tagName) {
+                var list=tagName.splice(".")
+                return [parseInt(list[0]),parseInt(list[1]),parseInt(list[2])]
+
+            },
+            getRunningFlag:function(){
+                let requestMessage={
+                    command:"getRunningFlag",
+                    para:{},
+                    data:{}
+                }
+                this.ws.send(JSON.stringify(requestMessage))
+            },
+            runRTD:function (){
+                if (this.isRunning===1){
+                    alert("系统已处于运行模式")
+                    return
+                }
+                let requestMessage={
+                    command:"runRTD",
+                    para:{},
+                    data:{}
+                }
+                this.ws.send(JSON.stringify(requestMessage))
+            },
+            stopRTD:function () {
+                if (this.isRunning===0){
+                    alert("系统未处于运行模式")
+                    return
+                }
+                let requestMessage={
+                    command:"stopRTD",
+                    para:{},
+                    data:{}
+                }
+                this.ws.send(JSON.stringify(requestMessage))
+            },
+            updatePointsFromRTD:function () {
+                if(this.currentNode.Node_ID===undefined||this.currentChannel.Channel_ID===undefined||this.currentRtu.Rtu_ID===undefined||this.currentPointType.PointType_ID===undefined){
+                    return
+                }
+                if(this.isRunning===0){
+                    return
+                }
+                let requestMessage={
+                    command:"updatePointsFromRTD",
+                    para:{
+                        Node_ID:this.currentNode.Node_ID,
+                        Channel_ID:this.currentChannel.Channel_ID,
+                        Rtu_ID:this.currentRtu.Rtu_ID,
+                        Point_Type: this.currentPointType.PointType_ID,
+                    },
+                    data:{}
+                }
+                this.ws.send(JSON.stringify(requestMessage))
+                
+            },
+            sortByKey:function (key) {
+                return function (a,b) {
+                    return a[key]-b[key]
+                }
+            }
+            
+        }
+    })
+
+</script>
+
+</body>
+</html>

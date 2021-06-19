@@ -1,0 +1,13 @@
+{
+"DatabaseName":"maboroshi",
+"WebStarUp":true,
+"WebServerAddr":"127.0.0.1:80",
+"NodeDiscoveryMode":0,
+"UDPServerAddr":"127.0.0.1:10800",
+"UDPClientAddr":"127.0.0.1:11800",
+"TCPServerAddr":"127.0.0.1:12800",
+"TCPClientAddr":"127.0.0.1:13000",
+"PresetRemoteNodes":{"1":"127.0.0.1:13800"},
+"PresetLocalNodeID":0,
+"BusUpdateCycle":500
+}
