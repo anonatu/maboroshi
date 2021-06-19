@@ -29,11 +29,13 @@ A communication protocol simulation platform by Golang
 >>>监听端口:这个是规约listen的端口，基于tcp的北向协议基本都要配置这个  
 
 >4.点击rtu配置，点击刷新节点信息，选中刚刚建立的channel，在这个channel中添加rtu，需要注意的几个参数如下：  
+>![image](https://github.com/anonatu/maboroshi/blob/main/png/rtu%E9%85%8D%E7%BD%AE.png)   
 >>描述信息：描述信息而已，在之后配置中方便区分即可  
 >>RtuID：这个是作为软件内部的一个标识，与规约无关，但是要保证节点内唯一   
 >>Rtu地址:就是modbus子节点的地址    
 
 >5.点击点配置，再点击刷新节点信息之后选择上面配置的那些通道和Rtu，选择要浏览和修改的点类型，注意，这里大致了几种点的类型，modbus用到的大概只有模拟量和数字量两种的读和写。需要注意的参数如下  
+>![image](https://github.com/anonatu/maboroshi/blob/main/png/%E7%82%B9%E4%BF%A1%E6%81%AF%E9%85%8D%E7%BD%AE.png)   
 >>描述信息：描述信息而已，在之后配置中方便区分即可  
 >>基值:仿真点的基础值  
 >>变化策略：数据点的自动变化策略 1：固定不变，2：随机变化，3：递增，4：周期变化  
