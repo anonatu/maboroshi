@@ -1,7 +1,7 @@
 {
 "DatabaseName":"maboroshi",
 "WebStarUp":true,
-"WebServerAddr":"127.0.0.1:80",
+"WebServerAddr":"127.0.0.1:8080",
 "NodeDiscoveryMode":0,
 "UDPServerAddr":"127.0.0.1:10800",
 "UDPClientAddr":"127.0.0.1:11800",
